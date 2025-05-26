@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pokedex</title>
+  <style>
+    body {
+      background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png');
+      background-repeat: repeat;
+      background-size: 100px 100px;
+      background-attachment: fixed;
+      font-family: Arial, sans-serif;
+    }
+
+    h1, h2 {
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    form {
+      margin-bottom: 30px;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+
+    input, button {
+      margin: 5px 5px 5px 0;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kanto Regional Pokedex</h1>
+
+    <div class="top-bar">
+    <form method="get" action="/">
+        <input type="text" name="search" placeholder="Search name/type">
+        <button type="submit">Search</button>
+    </form>
+    
+
+    <form action="/trainer">
+        <button type="submit">Trainers Hub</button>
+    </form>
+    </div>
+
+
+
+  <!-- 🔍 Search Form -->
+  <!-- <form method="get" action="/">
+    <input type="text" name="search" placeholder="Search name/type">
+    <button type="submit">Search</button>
+  </form> -->
+
+    <!-- Trainers Hub button styled the same and placed beside -->
+    <!-- <form action="/trainer" style="display: inline-block;">
+    <button type="submit">Trainers Hub</button>
+    </form> -->
+
+
+    
+
+  <!-- ➕ Add Pokémon Form - KAN BRUGES TIL INSERT AF FAVORIT POKE --> 
+  <!-- <h2>Add a New Pokémon</h2>
+  <form method="post" action="/">
+    <input name="name" placeholder="Name" required>
+    <input name="weight" placeholder="Weight" type="number" required>
+    <input name="hp" placeholder="HP" type="number" required>
+    <input name="attack" placeholder="Attack" type="number" required>
+    <input name="defense" placeholder="Defense" type="number" required>
+    <input name="special_attack" placeholder="Special Attack" type="number" required>
+    <input name="special_defense" placeholder="Special Defense" type="number" required>
+    <input name="speed" placeholder="Speed" type="number" required>
+    <input name="totalstats" placeholder="Total stats" type="number" required>
+    <input name="type" placeholder="Type(s)">
+    <input name="evolution_stg" placeholder="Evolution Stage" type="number">
+    <button type="submit">Add Pokémon</button>
+  </form> -->
+
+  <!-- 📋 Pokémon Table -->
+  <h2>All Pokémon</h2>
+  <table>
+    <thead>
+      <tr>
+        
+        <th>Name</th>
+        <th>Weight</th>
+        <th>HP</th>
+        <th>Attack</th>
+        <th>Defense</th>
+        <th>Sp. Atk</th>
+        <th>Sp. Def</th>
+        <th>Speed</th>
+        <th>Total Stats</th>
+        <th>Type(s)</th>
+        <th>Evolution Stage</th>
+
+
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pokemons %}
+      <tr>
+        <td>{{ p[1] }}</td>
+        <td>{{ p[2] }}</td>
+        <td>{{ p[3] }}</td>
+        <td>{{ p[4] }}</td>
+        <td>{{ p[5] }}</td>
+        <td>{{ p[6] }}</td>
+        <td>{{ p[7] }}</td>
+        <td>{{ p[8] }}</td>
+        <td>{{ p[9] }}</td>
+        <td>{{ p[10] | replace("[", "") | replace("]", "") | replace("'", "") }}</td>
+        <td>{{ p[11] }}</td>
+        <!---<td><a href="/delete/{{ p[0] }}">🗑 Delete</a></td>--->
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
