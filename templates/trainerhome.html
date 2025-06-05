@@ -26,39 +26,57 @@
     }
   </style>
 </head>
+
+
+<a href="/trainer">
+  <button>⬅️ Return to Trainers Hub</button>
+</a>
+
+
 <body>
   <h1>{{ trainer }}'s Pokédex</h1>
 
   <div class="section">
-    <h2>Your Pokémon</h2>
+    <h2>Pokémon in your Dex:</h2>
     <ul>
       {% for p in pokedex %}
-        <li>{{ p[1] }} ({{ p[2] }})</li>
+        <li>{{ p[1] }} ({{ p[2] | replace("[", "") | replace("]", "") | replace("'", "") }})</li>
       {% endfor %}
     </ul>
   </div>
 
   <div class="section">
-    <h2>Favorites (max 6)</h2>
+    <h2>Your Favorites (max 6)</h2>
     <ul>
-      {% for f in favorites %}
-        <li>{{ f[1] }}</li>
-      {% endfor %}
+    {% for f in favorites %}
+        <li style="margin-bottom: 15px;">
+        <img src="{{ url_for('static', filename='images/sprites/' ~ f[1]|lower ~ '.png') }}"
+            alt="{{ f[1] }}"
+            width="64"
+            style="vertical-align: middle; margin-right: 10px;">
+        {{ f[1] }}
+        <form method="post" action="/trainer/{{ trainer_id }}/favorite/{{ f[0] }}/delete" style="display:inline;">
+            <button type="submit" style="margin-left:10px;">Remove ❌</button>
+        </form>
+        </li>
+    {% endfor %}
     </ul>
+
+
   </div>
 
   <div class="section">
     <h2>Add Pokémon to Your Pokédex</h2>
     <form method="post" action="/trainer/{{ trainer_id }}/add">
-      <input type="number" name="pokemon_id" placeholder="Pokémon ID" required>
+      <input type="text" name="pokemon_name" placeholder="Pokémon Name" required>
       <button type="submit">Add</button>
     </form>
   </div>
 
   <div class="section">
-    <h2>Set Favorite Pokémon</h2>
+    <h2>Choose Your Favorite Pokémon(s)</h2>
     <form method="post" action="/trainer/{{ trainer_id }}/favorite">
-      <input type="number" name="pokemon_id" placeholder="Pokémon ID" required>
+      <input type="text" name="pokemon_name" placeholder="Pokémon Name" required>
       <button type="submit">Add to Favorites</button>
     </form>
   </div>

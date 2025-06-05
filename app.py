@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash, session
 import psycopg2
 
 app = Flask(__name__)
+app.secret_key = "supersecret" 
 
 conn = psycopg2.connect(
     dbname="todo",
@@ -29,12 +30,6 @@ def index():
         evolution_stg = request.form["evolution_stg"]
 
 
-        # cur.execute(""" -- KAN BRUGES TIL INSERT AF FAVORIT POKEMON
-        #     INSERT INTO pokemon (name, weight, hp, attack, defense, specialattack, specialdefense, speed, totalstats, type, evolution_stg)
-        #     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        # """, (name, weight, hp, attack, defense, special_attack, special_defense, speed, totalstats, type, evolution_stg))
-        # conn.commit()
-
     search = request.args.get("search", "")
 
     cur.execute("""
@@ -50,7 +45,12 @@ def index():
 
 @app.route("/trainer", methods=["GET"])
 def trainer_page():
-    return render_template("trainer.html")
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM trainers ORDER BY name")
+    trainers = cur.fetchall()
+    cur.close()
+    return render_template("trainer.html", trainers=trainers)
+
 
 @app.route("/trainer/login", methods=["POST"])
 def trainer_login():
@@ -59,10 +59,13 @@ def trainer_login():
     cur.execute("SELECT id FROM trainers WHERE name = %s", (name,))
     trainer = cur.fetchone()
     cur.close()
+
     if trainer:
         return redirect(f"/trainer/{trainer[0]}")
     else:
-        return f"Trainer '{name}' not found!"
+        flash("Trainer not found, please register.")
+        return redirect("/trainer")
+
 
 
 
@@ -73,12 +76,14 @@ def trainer_create():
     try:
         cur.execute("INSERT INTO trainers (name) VALUES (%s)", (name,))
         conn.commit()
-        return f"Trainer '{name}' created successfully!"
-    except psycopg2.IntegrityError:
+        flash("✅ Trainer registered successfully!")
+    except psycopg2.errors.UniqueViolation:
         conn.rollback()
-        return f"Trainer '{name}' already exists!"
+        flash("⚠️ Trainer already exists.")
     finally:
         cur.close()
+    return redirect("/trainer")
+
 
 @app.route("/trainer/<int:trainer_id>")
 def trainer_home(trainer_id):
@@ -108,8 +113,18 @@ def trainer_home(trainer_id):
 
 @app.route("/trainer/<int:trainer_id>/add", methods=["POST"])
 def add_to_pokedex(trainer_id):
-    pokemon_id = request.form["pokemon_id"]
+    pokemon_name = request.form["pokemon_name"].strip().lower()
     cur = conn.cursor()
+
+    cur.execute("SELECT id FROM pokemon WHERE LOWER(name) = %s", (pokemon_name,))
+    result = cur.fetchone()
+
+    if not result:
+        cur.close()
+        return f"❌ Pokémon '{pokemon_name}' not found."
+
+    pokemon_id = result[0]
+
     try:
         cur.execute("INSERT INTO trainer_pokedex (trainer_id, pokemon_id) VALUES (%s, %s)", (trainer_id, pokemon_id))
         conn.commit()
@@ -119,10 +134,21 @@ def add_to_pokedex(trainer_id):
     return redirect(f"/trainer/{trainer_id}")
 
 
+
 @app.route("/trainer/<int:trainer_id>/favorite", methods=["POST"])
 def add_to_favorites(trainer_id):
-    pokemon_id = request.form["pokemon_id"]
+    pokemon_name = request.form["pokemon_name"].strip().lower()
     cur = conn.cursor()
+
+    # Lookup ID
+    cur.execute("SELECT id FROM pokemon WHERE LOWER(name) = %s", (pokemon_name,))
+    result = cur.fetchone()
+
+    if not result:
+        cur.close()
+        return f"❌ Pokémon '{pokemon_name}' not found."
+
+    pokemon_id = result[0]
 
     # Check favorite count
     cur.execute("SELECT COUNT(*) FROM favorites WHERE trainer_id = %s", (trainer_id,))
@@ -140,6 +166,16 @@ def add_to_favorites(trainer_id):
     cur.close()
     return redirect(f"/trainer/{trainer_id}")
 
+@app.route("/trainer/<int:trainer_id>/favorite/<int:pokemon_id>/delete", methods=["POST"])
+def delete_favorite(trainer_id, pokemon_id):
+    cur = conn.cursor()
+    cur.execute("""
+        DELETE FROM favorites
+        WHERE trainer_id = %s AND pokemon_id = %s
+    """, (trainer_id, pokemon_id))
+    conn.commit()
+    cur.close()
+    return redirect(f"/trainer/{trainer_id}")
 
 
 
