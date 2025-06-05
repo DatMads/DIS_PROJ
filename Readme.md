@@ -22,7 +22,7 @@ The database name is up to the user, however make sure that in app.py:
     host="localhost",
     port="5432"
 
-The above should me changed accordingly to the users setup ie. TADB etc. The host and port should 
+The above should me changed accordingly to the users setup ie. dbname = "TADB" etc. The host and port should 
 remain as default.
 
 (3)
